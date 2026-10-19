@@ -351,6 +351,8 @@ Permissions are enforced **in the MCP servers**, not in prompts:
 
 ## Development
 
+Developer handoff for Claude Code: [`DEVELOPMENT.md`](DEVELOPMENT.md). Open Claude Code in the hub root and run `/continue`.
+
 ```powershell
 .\mcp-layer\.venv\Scripts\python -m pytest mcp-layer\tests -q
 ```
