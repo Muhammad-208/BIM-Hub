@@ -1,0 +1,28 @@
+# Hub-wide settings. Paths are Windows paths on your machine.
+library_roots:
+  - "E:/Downloads/DownLoads/BIM"
+  - "E:/Media/BIM Management"
+
+# Files ignored by `bimhub catalog`
+ignore_patterns: ["~$*", "*.css", "*.download", "*.zip", "Thumbs.db", "*.png"]
+
+# Path keyword → tag rules for the catalog (case-insensitive, matched on the relative path)
+tag_rules:
+  iso19650: ["19650", "pas 1192", "pas1192", "bs_1192", "bs 1192", "uk bim"]
+  lod-loin: ["lod", "loin", "level-of-development", "level of development"]
+  cobie: ["cobie"]
+  classification: ["uniclass", "omniclass", "12006", "81346", "classification"]
+  template: ["template", "checklist", "matrix", "bep", "pxp", "bxp", "eir", "pir", "tidp", "midp", "proforma"]
+  standard-regional: ["natspec", "abab", "newzeland", "nz", "dubai", "singapore", "hkibim", "neom", "eubim", "nbims", "aec uk"]
+  management: ["management", "succar", "lean", "lpom", "strategy", "kpi", "maturity", "dt/", "digital", "ecosystem", "course", "module"]
+  qa-qc: ["audit", "checker", "solibri", "validat", "quality", "8000"]
+  coordination: ["coordination", "clash", "navisworks", "spatial"]
+  asset-fm: ["asset", "facility", "fm", "55001", "operational"]
+  risk: ["risk"]
+  data-dictionary: ["23386", "23387", "22274", "data"]
+  book: ["best books", "handbook", "z-lib", "pdfdrive"]
+  video: [".mp4"]
+  arc: ["revit family", "family creation", "architect"]
+  str: ["rebar", "structur"]
+  elec: ["elec", "panels"]
+  infra: ["infrastructure", "civil", "gis"]

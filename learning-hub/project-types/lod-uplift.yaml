@@ -1,0 +1,87 @@
+# Project type: develop coordinated LOD 300 models to LOD 400 (fabrication / shop drawings)
+id: lod-uplift
+title: LOD 300 → LOD 400 uplift
+title_ar: رفع الموديلات من LOD 300 إلى LOD 400
+summary: >
+  Take coordinated LOD 300 models and develop them to fabrication level: real products and manufacturer families,
+  connections, supports and hangers, rebar, fabrication splits and assembly data, coordinated at installation
+  tolerance, then produce shop / spool drawings for approval.
+inputs: ["Coordinated LOD 300 RVT models", "Approved product submittals / manufacturer data", "Specifications",
+         "Fabricator standards (spool lengths, connection types, tolerances)"]
+input_kinds: [revit-model, navisworks-document, pdf, excel]
+roles: [leader, modeler, drafter, clash, info]
+mcp: [bimhub, revit, navisworks, sd-agent]
+skills: [lod-uplift, loin-check, clash-workflow, model-qa-checklist, iso19650-naming]
+folders: [01-bep/lod400, 03-coordination/fabrication, 06-reports/shop-drawings]
+params:
+  from_lod: 300
+  to_lod: 400
+  trades: [structural-steel, rebar, ductwork, pipework, cable-containment, sprinklers]
+  clash_tolerance_mm: 5          # fabrication-level hard clash
+  clearance_mm: 50               # insulation / maintenance / installation clearance tests
+  approval_status_codes: [A, B, C]
+
+stages:
+  - id: U1
+    title: Baseline audit of LOD 300 models
+    owner: leader
+    per_discipline: true
+    gate: [qa-model]
+    outputs: ["Health + clash status of each model", "List of elements below LOD 300 (sent back, not uplifted)"]
+    done_when: The model is confirmed coordinated at LOD 300, or the gaps are logged as issues.
+  - id: U2
+    title: LOD 400 element matrix
+    owner: bim-manager
+    support: [leader]
+    gate: [qa-data]
+    outputs: ["01-bep/lod400/matrix.xlsx — per element class: products, connections, supports, splits, required fabrication data"]
+    done_when: Every element class in scope has its LOD 400 definition and the source (spec / submittal / fabricator).
+  - id: U3
+    title: Fabrication detailing
+    owner: modeler
+    support: [leader]
+    per_discipline: true
+    gate: [qa-model]
+    outputs: ["Manufacturer families replace generic ones", "Connections, hangers/supports, rebar, fittings modelled",
+              "Runs split into fabrication lengths"]
+    done_when: Every element in the zone meets the LOD 400 matrix.
+  - id: U4
+    title: Fabrication coordination
+    owner: clash
+    support: [leader]
+    per_discipline: true
+    gate: [qa-model]
+    outputs: ["Clash at fabrication tolerance + clearance tests", "Installation sequence / access issues", "Zones coordinated"]
+    done_when: Zone has no open clashes at fabrication tolerance and the coordinator set it coordinated.
+  - id: U5
+    title: Fabrication information
+    owner: info
+    per_discipline: true
+    gate: [qa-data]
+    outputs: ["Assembly marks, spool numbers, material, weight, product data", "Quantities / BOQ export"]
+    done_when: All fabrication parameters of the matrix are filled for the zone.
+  - id: U6
+    title: Shop / spool drawings
+    owner: drafter
+    per_discipline: true
+    gate: [qa-doc]
+    outputs: ["Shop drawings (STR via sd-agent), spool sheets, assembly drawings — coordinated zones only"]
+    done_when: Drawing set for the zone passes qa-doc.
+  - id: U7
+    title: Approval & issue for fabrication
+    owner: bim-manager
+    gate: [qa-doc]
+    outputs: ["Submittal with status codes", "Comments loop logged as issues", "Approved set published"]
+    done_when: Status A/B received and the approved set is PUBLISHED.
+
+role_notes:
+  leader: Never uplift an element that is not coordinated at LOD 300 — send it back first (stage U1).
+  modeler: >
+    Use the approved product only (submittal reference in a parameter). Model what the fabricator needs to build:
+    connections, supports/hangers with rod lengths, fittings, rebar with cover. Split runs at fabrication lengths
+    from params / the LOD 400 matrix.
+  clash: Use params.clash_tolerance_mm and params.clearance_mm — fabrication coordination is tighter than LOD 300.
+  drafter: STR shop drawings go through the sd-agent MCP rules; every sheet needs drafting_clearance first.
+  info: Assembly marks and spool numbers must be unique and match the drawing tags.
+deliverables: ["LOD 400 models per trade", "Shop / spool / assembly drawings", "Fabrication quantities", "Approval log"]
+kpis: ["Elements at LOD 400 %", "Open fabrication clashes", "Drawings approved (A/B) %", "Resubmissions"]

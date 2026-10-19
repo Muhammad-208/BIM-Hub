@@ -1,0 +1,72 @@
+# Project definition — edited by you, read by every agent and every MCP server.
+code: "{{CODE}}"
+name: "{{NAME}}"
+client: ""
+location: ""
+stage: "RIBA 2 - Concept"          # or ISO 19650 delivery stage you use
+appointment: "Lead Appointed Party" # Appointing Party | Lead Appointed Party | Appointed Party
+
+# Project type → workflow stages, QA gates, skills (learning-hub/project-types/<type>.yaml; list: bimhub types).
+# cad-to-bim | model-review | lod-uplift | scan-to-bim   ("" = no fixed workflow)
+type: "{{TYPE}}"     # {{TYPE_TITLE}}
+# Type parameters (defaults from the type; change them for this project)
+params:
+{{PARAMS}}
+
+# The team for THIS project (subset of agents/). L2-L4 are always included.
+team: [{{TEAM}}]
+
+# Roles inside each discipline sub-team (remove any you don't staff on this project; leader is always kept).
+roles: [{{ROLES}}]
+
+# Where clash resolvers export NWC ({DISC} = ARC, STR…). Absolute (e.g. an ACC Desktop Connector folder) or project-relative.
+exports:
+  nwc: "03-coordination/nwc/{DISC}"
+
+# Shared parameters required by this project — filled by <disc>-info, measured on the coordinator's dashboard.
+shared_parameters: []
+#  - {name: "{{CODE}}_Zone", type: text, categories: [all]}
+#  - {name: "{{CODE}}_Uniclass_Ss", type: text, categories: [Ducts, Pipes, Cable Trays]}
+
+# Naming convention (ISO 19650-2 National Annex style). Used by qa-doc.
+naming:
+  pattern: "{project}-{originator}-{volume}-{level}-{type}-{role}-{number}"
+  separator: "-"
+  fields:
+    project:    {regex: "^{{CODE}}$"}
+    originator: {regex: "^[A-Z0-9]{3,6}$"}
+    volume:     {regex: "^[A-Z0-9]{2}$"}
+    level:      {regex: "^[A-Z0-9]{2}$"}
+    type:       {values: [M3, DR, SP, RP, SH, SC, CA, MI, VS, CO, CR]}
+    role:       {regex: "^[A-Z]{1,2}$"}   # UK NA: A S M P E C L ... ; 2-char codes are project-defined
+    number:     {regex: "^\\d{4,6}$"}
+
+# Discipline → role code (UK NA codes; FP and IT are project-defined, agree them in the BEP) and write scope. MCP servers refuse writes outside an agent's scope.
+disciplines:
+  arc:   {role: A, wip: "02-cde/WIP/ARC"}
+  str:   {role: S, wip: "02-cde/WIP/STR"}
+  mech:  {role: M, wip: "02-cde/WIP/MECH"}
+  plumb: {role: P, wip: "02-cde/WIP/PLUMB"}
+  ff:    {role: FP, wip: "02-cde/WIP/FF"}
+  elec:  {role: E, wip: "02-cde/WIP/ELEC"}
+  ict:   {role: IT, wip: "02-cde/WIP/ICT"}
+  infra: {role: C, wip: "02-cde/WIP/INFRA"}
+  land:  {role: L, wip: "02-cde/WIP/LAND"}
+
+# Where this project's files live. Agents can read ONLY inside these folders (+ the project folder itself).
+#   local  : any folder on this PC / network share
+#   acc-dc : ACC/BIM 360 synced by Autodesk Desktop Connector, e.g. C:/Users/<you>/DC/ACCDocs/<Account>/<Project>/Project Files
+#   acc-web: ACC in the browser — agents browse it with Claude in Chrome (skill acc-browse) and download into 00-inputs/received
+# Manage with:  bimhub source add <CODE> --name ACC --type acc-dc --path "..."   then   bimhub scan <CODE>
+sources: []
+
+# Live models (optional) — paths or ACC/BIM 360 references.
+models: {}
+#  arc: "C:/Models/AOH-WYA-ZZ-ZZ-M3-A-0001.rvt"
+#  federated: "C:/Models/AOH-Federated.nwf"
+
+# Which MCP servers this project's agents get (names from mcp-layer/config/servers.yaml).
+# Add "sd-agent" when STR shop drawings are in scope; "civil3d" once its add-in exists.
+mcp: [{{MCP}}]
+
+standards: [ISO 19650-1, ISO 19650-2, BIMForum LOD Spec 2021, Uniclass 2015]

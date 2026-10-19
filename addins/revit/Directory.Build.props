@@ -1,0 +1,7 @@
+<Project>
+  <!-- Separate intermediate folders per Revit version (must be set before the SDK is imported). -->
+  <PropertyGroup>
+    <RevitVersion Condition="'$(RevitVersion)' == ''">2027</RevitVersion>
+    <BaseIntermediateOutputPath>obj\$(RevitVersion)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,42 @@
+# Route map for YOUR existing Navisworks add-in: E:\MCP\Navisworks_MCP\addin (MCPBridge, http://localhost:8765, 35 routes).
+# Every route is POST with a JSON body; handler errors come back as HTTP 500 {error, detail}.
+# The tool → body-parameter names are handled in src/bimhub/servers/navisworks.py.
+get_document_info:      {path: "/document/info"}
+get_model_statistics:   {path: "/document/statistics"}
+get_current_selection:  {path: "/selection/get"}
+select_all:             {path: "/selection/select-all"}
+deselect_all:           {path: "/selection/deselect-all"}
+invert_selection:       {path: "/selection/invert"}
+select_from_set:        {path: "/selection/from-set"}
+select_by_name:         {path: "/selection/by-name"}
+list_sets:              {path: "/sets/list"}
+create_selection_set:   {path: "/sets/selection/create"}
+create_search_set:      {path: "/sets/search/create"}
+delete_set:             {path: "/sets/delete"}
+get_set_items:          {path: "/sets/items"}
+run_search_set:         {path: "/sets/search/run"}
+find_items:             {path: "/elements/find"}
+find_items_by_name:     {path: "/elements/find-by-name"}
+get_element_properties: {path: "/elements/properties"}
+color_selection:        {path: "/elements/color"}
+set_transparency:       {path: "/elements/transparency"}
+hide_selection:         {path: "/elements/hide"}
+unhide_all:             {path: "/elements/unhide-all"}
+isolate_selection:      {path: "/elements/isolate"}
+reset_overrides:        {path: "/elements/reset-overrides"}
+list_clash_tests:       {path: "/clash/list"}
+create_clash_test:      {path: "/clash/create"}
+set_clash_selections:   {path: "/clash/set-selections"}
+run_clash_test:         {path: "/clash/run"}
+get_clash_results:      {path: "/clash/results"}
+delete_clash_test:      {path: "/clash/delete"}
+create_clash_group:     {path: "/clash/group/create"}
+list_clash_groups:      {path: "/clash/group/list"}
+delete_clash_group:     {path: "/clash/group/delete"}
+add_clashes_to_group:   {path: "/clash/group/add-clashes"}
+set_clash_group_status: {path: "/clash/group/set-status"}
+list_viewpoints:        {path: "/viewpoints/list"}
+save_viewpoint:         {path: "/viewpoints/save"}
+goto_viewpoint:         {path: "/viewpoints/goto"}
+delete_viewpoint:       {path: "/viewpoints/delete"}
+get_current_viewpoint:  {path: "/viewpoints/current"}

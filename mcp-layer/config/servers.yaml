@@ -1,0 +1,41 @@
+# MCP server registry — the single place where every MCP the agents may use is declared.
+# kind: native   → a server inside this package (python -m <module>)
+# kind: external → any other MCP (your existing ones, 3rd party, node, etc.) — command/args passed through as-is
+# A project chooses which ones its agents get in project.yaml → mcp: [...]
+
+servers:
+  bimhub:
+    kind: native
+    module: bimhub.servers.hub
+    description: Learning Hub search, project state (issues, decisions, model status, messages), lessons, naming checks
+
+  revit:
+    kind: native
+    module: bimhub.servers.revit
+    description: Revit 2020–2027 model read/write via the BIM Hub add-in (addins/revit) — writes only by the owning discipline
+    bridge: {transport: http, url: "http://localhost:8766", timeout_s: 150}
+
+  navisworks:
+    kind: native
+    module: bimhub.servers.navisworks
+    description: Navisworks federation & clash via your MCPBridge add-in (E:/MCP/Navisworks_MCP/addin), with team permissions
+    bridge: {transport: http, url: "http://localhost:8765", timeout_s: 300, map: "bridges/navisworks.yaml"}
+
+  civil3d:
+    kind: native
+    module: bimhub.servers.civil3d
+    description: Civil 3D alignments, surfaces, networks through the Civil 3D add-in
+    bridge: {transport: http, url: "http://localhost:8767", timeout_s: 60}
+
+  # ---- your existing MCPs in E:/MCP, kept as-is (kind: external) ----
+  sd-agent:
+    kind: external
+    description: STR shop-drawing agent (learn from approved sheets, pending elements) — file bridge C:/ProgramData/SDAgent
+    command: "python"
+    args: ["E:/MCP/Revit/MCP/server.py"]
+
+  navisworks-legacy:
+    kind: external
+    description: Your original Navisworks MCP (server_http.py) — no team permissions; use only if the native 'navisworks' misbehaves
+    command: "python"
+    args: ["E:/MCP/Navisworks_MCP/addin/server_http.py"]

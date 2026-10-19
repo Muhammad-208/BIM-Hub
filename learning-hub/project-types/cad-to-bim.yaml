@@ -1,0 +1,92 @@
+# Project type: CAD drawings → coordinated Revit 3D model (LOD 300)
+id: cad-to-bim
+title: CAD to coordinated Revit model
+title_ar: تحويل CAD إلى موديل Revit منسّق
+summary: >
+  Build discipline Revit models from 2D CAD/PDF drawings, coordinate them zone by zone until clash-free,
+  then (optionally) produce sheets from coordinated zones. Target LOD 300 unless the EIR says otherwise.
+inputs: ["DWG/DXF/PDF drawings per discipline (plans, sections, elevations, details, schedules)",
+         "Drawing register / transmittal", "EIR or client BIM requirements", "Survey / site coordinates if any"]
+input_kinds: [dwg, dxf, pdf]
+roles: [leader, modeler, drafter, clash, info]
+mcp: [bimhub, revit, navisworks]
+skills: [cad-to-bim, clash-workflow, model-qa-checklist, loin-check, iso19650-naming]
+folders: [00-inputs/cad, 04-qa/cad-audit]
+params:
+  target_lod: 300
+  cad_folder: "00-inputs/cad"
+  units: mm
+  clash_tolerance_mm: 25        # hard-clash tolerance used in Navisworks tests
+  drafting_in_scope: true
+
+stages:
+  - id: S1
+    title: CAD intake & audit
+    owner: leader
+    support: [info]
+    per_discipline: true
+    gate: [qa-doc]
+    outputs: ["CAD register (file, title, revision, scale, units, date) in 04-qa/cad-audit/",
+              "RFI issues for missing/contradicting drawings"]
+    done_when: Every drawing is registered with revision and units; gaps and conflicts are raised as RFI issues.
+  - id: S2
+    title: Model setup & shared coordinates
+    owner: bim-coordinator
+    support: [modeler]
+    gate: [qa-model]
+    outputs: ["Levels & grids agreed from ARC/STR CAD", "Survey point / project base point and shared coordinates",
+              "Model split (one RVT per discipline/volume), worksets, template"]
+    done_when: All discipline models open on the same shared coordinates and levels/grids are copy-monitored.
+  - id: S3
+    title: Modelling to target LOD by zone
+    owner: modeler
+    support: [leader]
+    per_discipline: true
+    gate: [qa-model]
+    outputs: ["RVT per discipline in 02-cde/WIP/<DISC>", "Current LOD / Target LOD parameters filled"]
+    done_when: Every element shown on the CAD for the zone is modelled; open RFIs are flagged on the elements.
+  - id: S4
+    title: Clash coordination
+    owner: clash
+    support: [leader]
+    per_discipline: true
+    gate: [qa-model]
+    outputs: ["NWC exports to the agreed path", "Clash groups resolved or assigned", "Zones marked coordinated"]
+    done_when: No open critical/high clashes in the zone and the coordinator has set it to coordinated.
+  - id: S5
+    title: Information & model health
+    owner: info
+    per_discipline: true
+    gate: [qa-data]
+    outputs: ["Shared parameters filled", "Model health report (health_submit)"]
+    done_when: Model health ≥ the BEP target and required parameters are complete.
+  - id: S6
+    title: Sheets from coordinated zones
+    owner: drafter
+    per_discipline: true
+    optional: true
+    gate: [qa-doc]
+    outputs: ["Sheets / views only for zones with drafting_clearance ok"]
+    done_when: All requested sheets issued for coordinated zones and pass qa-doc.
+  - id: S7
+    title: Issue to client
+    owner: bim-manager
+    gate: [qa-doc]
+    outputs: ["Published RVT + NWD (+ IFC if required)", "Conversion report: scope, RFIs, assumptions, clash status"]
+    done_when: Containers promoted to PUBLISHED with status codes and the conversion report is issued.
+
+role_notes:
+  leader: >
+    Split the CAD set into zones with the coordinator before modelling starts. Every CAD conflict
+    (plan vs section, ARC vs STR) is an RFI issue — never let a modeler guess silently.
+  modeler: >
+    Link CAD (never import or explode), on its own workset, after checking units and origin. Model only what the
+    drawings show; where drawings conflict or are missing, model the most likely option, set Comments = "RFI-<id>"
+    and raise the issue to your leader. Use proper system families/categories — no in-place or generic models
+    for things that have a category.
+  clash: Run clash per zone as soon as two disciplines have modelled it; do not wait for the whole building.
+  drafter: Sheets are optional on this type — check `params.drafting_in_scope`; draft only after drafting_clearance.
+  info: Fill parameters from the CAD schedules/legends (equipment tags, ratings, fire ratings, finishes).
+deliverables: ["Coordinated discipline RVT models (LOD 300)", "Federated NWD", "Clash report", "RFI log",
+               "Model health per discipline", "Sheets (optional)"]
+kpis: ["Drawings converted %", "Open RFIs", "Open clashes per zone", "Zones coordinated %", "Model health score"]

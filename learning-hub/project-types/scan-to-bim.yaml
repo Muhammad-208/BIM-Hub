@@ -1,0 +1,88 @@
+# Project type: as-built Revit models from point cloud (scan to BIM)
+id: scan-to-bim
+title: As-built models from point cloud
+title_ar: موديلات As-built من Point Cloud
+summary: >
+  Model existing conditions from laser-scan point clouds (E57 / RCP / RCS / LAS) to an agreed accuracy (USIBD LOA)
+  and level of development, verify the model against the cloud with a deviation analysis, add as-built asset
+  information and issue as-built models and drawings.
+inputs: ["Registered point cloud (E57 / RCP + RCS / LAS)", "Scan / registration report (RMS, control points)",
+         "Survey control & coordinate system", "Site photos / panoramas", "Existing drawings (if any)"]
+input_kinds: [point-cloud, pdf, image, dwg]
+roles: [leader, modeler, drafter, info]
+mcp: [bimhub, revit, navisworks]
+skills: [scan-to-bim, model-qa-checklist, loin-check, cobie-validation, iso19650-naming]
+folders: [00-inputs/point-cloud, 04-qa/deviation, 06-reports/as-built]
+params:
+  loa_measured: 20              # USIBD LOA of the scan data
+  loa_represented: 30           # USIBD LOA the model must achieve
+  target_lod: 300               # geometry detail of modelled elements (as-built, field-verified)
+  point_cloud_folder: "00-inputs/point-cloud"
+  coordinate_system: ""         # e.g. EPSG code / local site grid
+  verification_parameter: "Verification"   # Scanned | Assumed | From drawings
+
+stages:
+  - id: P1
+    title: Point cloud intake & registration check
+    owner: bim-coordinator
+    support: [info]
+    gate: [qa-data]
+    outputs: ["Point-cloud register (files, points, scan count, size)", "Registration accuracy vs LOA measured",
+              "Coverage gaps / occlusions raised as survey RFIs"]
+    done_when: Registration accuracy is documented and fits LOA measured; gaps are logged.
+  - id: P2
+    title: Setup, scope & LOA matrix
+    owner: bim-coordinator
+    support: [leader]
+    gate: [qa-model]
+    outputs: ["Cloud linked in Revit on shared coordinates", "Levels & grids from the cloud",
+              "Scope matrix: element class × LOA represented × LOD × zone"]
+    done_when: All disciplines model on the same linked cloud with an agreed scope matrix.
+  - id: P3
+    title: Modelling from the cloud
+    owner: modeler
+    support: [leader]
+    per_discipline: true
+    gate: [qa-model]
+    outputs: ["As-built RVT per discipline", "Every element has Verification = Scanned / Assumed / From drawings"]
+    done_when: Everything visible in the cloud for the zone is modelled; hidden elements are tagged Assumed.
+  - id: P4
+    title: Deviation analysis
+    owner: qa-model
+    support: [info]
+    gate: []
+    outputs: ["Deviation per element class vs LOA represented tolerance", "% of elements within tolerance",
+              "Heat-map views / report in 04-qa/deviation"]
+    done_when: ≥ 95 % of checked surfaces within the LOA represented range, outliers fixed or justified.
+  - id: P5
+    title: As-built information
+    owner: info
+    per_discipline: true
+    gate: [qa-data]
+    outputs: ["Asset data, condition, tags from site photos", "COBie / FM export if required"]
+    done_when: Required as-built properties are complete for the zone.
+  - id: P6
+    title: As-built drawings
+    owner: drafter
+    per_discipline: true
+    optional: true
+    gate: [qa-doc]
+    outputs: ["Plans, sections, elevations from the verified model"]
+    done_when: Drawing set passes qa-doc.
+  - id: P7
+    title: Handover
+    owner: bim-manager
+    gate: [qa-doc]
+    outputs: ["As-built models + drawings + deviation report + survey limitations statement"]
+    done_when: Published with the accuracy statement (LOA) and limitations.
+
+role_notes:
+  leader: Agree LOA per element class before modelling — not every element needs the same accuracy.
+  modeler: >
+    Model to the cloud, not to an idealised design: walls may be out of plumb, slabs out of level — follow
+    params.loa_represented. Do not invent what you cannot see; model it as Assumed and say why.
+  info: Read tags and nameplates from photos/panoramas; anything not verifiable is left empty, not guessed.
+  drafter: As-built drawings carry a note with the LOA and the verification legend.
+deliverables: ["As-built RVT models", "Deviation report", "As-built drawings", "Asset data / COBie (if required)",
+               "Accuracy & limitations statement"]
+kpis: ["Area / zones modelled %", "Elements within LOA tolerance %", "Assumed elements %", "Open survey RFIs"]

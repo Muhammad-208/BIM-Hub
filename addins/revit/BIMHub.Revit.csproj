@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    One project, every Revit from 2020 to 2027.
+    Build one version:   dotnet build -c Release -p:RevitVersion=2024
+    Build all/install:   .\build.ps1   (see README.md)
+  -->
+  <PropertyGroup>
+    <RevitVersion Condition="'$(RevitVersion)' == ''">2027</RevitVersion>
+    <AssemblyName>BIMHub.Revit</AssemblyName>
+    <RootNamespace>BIMHub.Revit</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Version>1.0.0</Version>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\$(Configuration)\$(RevitVersion)\</OutputPath>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <!-- Revit ↔ .NET runtime -->
+  <PropertyGroup Condition="'$(RevitVersion)' == '2020'"><TargetFramework>net47</TargetFramework></PropertyGroup>
+  <PropertyGroup Condition="'$(RevitVersion)' &gt;= '2021' And '$(RevitVersion)' &lt;= '2024'"><TargetFramework>net48</TargetFramework></PropertyGroup>
+  <PropertyGroup Condition="'$(RevitVersion)' == '2025' Or '$(RevitVersion)' == '2026'"><TargetFramework>net8.0-windows</TargetFramework></PropertyGroup>
+  <PropertyGroup Condition="'$(RevitVersion)' &gt;= '2027'"><TargetFramework>net10.0-windows</TargetFramework></PropertyGroup>
+
+  <!-- Version symbols: REVIT2024 and REVIT2024_OR_GREATER etc. -->
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);REVIT$(RevitVersion)</DefineConstants>
+    <DefineConstants Condition="'$(RevitVersion)' &gt;= '2021'">$(DefineConstants);REVIT2021_OR_GREATER</DefineConstants>
+    <DefineConstants Condition="'$(RevitVersion)' &gt;= '2022'">$(DefineConstants);REVIT2022_OR_GREATER</DefineConstants>
+    <DefineConstants Condition="'$(RevitVersion)' &gt;= '2023'">$(DefineConstants);REVIT2023_OR_GREATER</DefineConstants>
+    <DefineConstants Condition="'$(RevitVersion)' &gt;= '2024'">$(DefineConstants);REVIT2024_OR_GREATER</DefineConstants>
+    <DefineConstants Condition="'$(RevitVersion)' &gt;= '2025'">$(DefineConstants);REVIT2025_OR_GREATER</DefineConstants>
+    <DefineConstants Condition="'$(RevitVersion)' &gt;= '2026'">$(DefineConstants);REVIT2026_OR_GREATER</DefineConstants>
+    <DefineConstants Condition="'$(RevitVersion)' &gt;= '2027'">$(DefineConstants);REVIT2027_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Revit API: the installed Revit if present, otherwise the Nice3point reference packages (no Revit needed to build). -->
+  <PropertyGroup>
+    <RevitInstallDir>C:\Program Files\Autodesk\Revit $(RevitVersion)\</RevitInstallDir>
+    <UseInstalledRevit Condition="Exists('$(RevitInstallDir)RevitAPI.dll') And '$(ForcePackages)' != 'true'">true</UseInstalledRevit>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(UseInstalledRevit)' == 'true'">
+    <Reference Include="RevitAPI"><HintPath>$(RevitInstallDir)RevitAPI.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="RevitAPIUI"><HintPath>$(RevitInstallDir)RevitAPIUI.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseInstalledRevit)' != 'true'">
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(RevitVersion).*" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- .NET Framework reference assemblies so it builds without the targeting pack installed -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net47' Or '$(TargetFramework)' == 'net48'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="src\**\*.cs" />
+    <None Include="BIMHub.Revit.addin" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

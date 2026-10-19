@@ -1,0 +1,85 @@
+# Project type: review delivered Revit / IFC models against LOD 300 and issue a review report
+id: model-review
+title: Model review (RVT / IFC vs LOD 300) + report
+title_ar: مراجعة موديلات Revit / IFC مقابل LOD 300 وإصدار تقرير
+summary: >
+  Receive models from others (RVT or IFC), check geometry against LOD 300, information against the LOIN/EIR,
+  model integrity, naming and coordination, then issue a scored review report with an issue list.
+  Nothing in the received models is modified.
+inputs: ["RVT and/or IFC models to review", "EIR / BEP / LOIN table of the delivering party (if any)",
+         "Review scope: disciplines, stage, reference LOD"]
+input_kinds: [revit-model, ifc, navisworks-cache, navisworks-document]
+roles: [leader, clash, info]
+mcp: [bimhub, revit, navisworks]
+skills: [model-review-report, model-qa-checklist, loin-check, cobie-validation, iso19650-naming, clash-workflow]
+folders: [00-inputs/models-under-review, 04-qa/review, 06-reports/review]
+params:
+  reference_lod: 300
+  formats: [rvt, ifc]
+  criteria: "BIMForum LOD Spec 2021 Part I (LOD 300) + project EIR/LOIN"
+  read_only: true               # reviewers never save over a received model
+  pass_mark: 80                 # overall compliance % to recommend status A
+  report_folder: "06-reports/review"
+
+stages:
+  - id: R1
+    title: Model intake & register
+    owner: bim-coordinator
+    support: [info]
+    gate: [qa-doc]
+    outputs: ["Model register: file, discipline, author, Revit version / IFC schema & MVD, units, georeference, size",
+              "Naming check of every received file"]
+    done_when: Every model is registered and readable; unreadable or wrong-version files are raised as issues.
+  - id: R2
+    title: Review criteria matrix
+    owner: bim-manager
+    support: [leader]
+    gate: [qa-data]
+    outputs: ["04-qa/review/criteria.xlsx — category × (LOD 300 geometry, required properties, integrity checks)"]
+    done_when: Criteria agreed per discipline, with the source of each requirement (EIR clause / LOD Spec element).
+  - id: R3
+    title: Geometry & integrity review
+    owner: leader
+    per_discipline: true
+    gate: [qa-model]
+    outputs: ["Per category: pass / partial / fail vs LOD 300 with sample element ids",
+              "Integrity: warnings, duplicates, in-place/generic families, CAD imports, levels/grids, coordinates"]
+    done_when: Every in-scope category of the discipline has a result with evidence.
+  - id: R4
+    title: Information review
+    owner: info
+    per_discipline: true
+    gate: [qa-data]
+    outputs: ["LOI completeness % per category", "IFC: entity mapping (IfcBuildingElementProxy %), Psets, classification",
+              "COBie check if required"]
+    done_when: Completeness measured for all required properties; worst elements listed.
+  - id: R5
+    title: Coordination review
+    owner: clash
+    per_discipline: true
+    gate: [qa-model]
+    outputs: ["Clash matrix run on the received models", "Counts by severity and discipline pair"]
+    done_when: Clash results grouped and summarised; no fixing — only reporting.
+  - id: R6
+    title: Review report
+    owner: bim-coordinator
+    gate: [qa-doc]
+    outputs: ["Dashboard 'model-review' (dashboard_publish)", "Report in 06-reports/review (scores, findings, issue list, recommendation)"]
+    done_when: Report compiled with a score per discipline and an overall recommendation.
+  - id: R7
+    title: Sign-off & issue
+    owner: bim-manager
+    gate: [qa-doc]
+    outputs: ["Signed report with status recommendation (A / B / C) sent to the delivering party"]
+    done_when: The manager has logged the decision and the report is issued.
+
+role_notes:
+  leader: >
+    You review, you do not remodel. For each category in criteria.xlsx check a sample (≥10 % or ≥20 elements,
+    all if fewer) against LOD 300: specific size, shape, location, orientation, quantity. Record element ids as evidence.
+  info: Measure completeness per required property; placeholders (TBC, 0, -, n/a) count as missing.
+  clash: Run tests and report; never move elements in received models.
+deliverables: ["Model review report (scored)", "Issue list (one issue per finding, with element ids)",
+               "Review dashboard", "Recommendation: A / B / C"]
+kpis: ["Overall compliance %", "Compliance % per discipline", "LOI completeness %", "Clashes by severity",
+       "IfcBuildingElementProxy %", "Model warnings"]

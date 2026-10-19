@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIM Hub Bridge</Name>
+    <Assembly>BIMHub.Revit\BIMHub.Revit.dll</Assembly>
+    <FullClassName>BIMHub.Revit.App</FullClassName>
+    <ClientId>6F3B2C1E-8A4D-4E7B-9C21-B1A0D5E7F3C9</ClientId>
+    <VendorId>BIMHUB</VendorId>
+    <VendorDescription>BIM Hub — MCP bridge for the multi-agent BIM team</VendorDescription>
+  </AddIn>
+</RevitAddIns>

@@ -1,0 +1,27 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+build/
+*.lock
+learning-hub/knowledge/_raw/
+projects/*/02-cde/**/*.rvt
+projects/*/02-cde/**/*.nwd
+projects/*/02-cde/**/*.nwc
+_transfer/
+studio-ui/node_modules/
+.pytest_cache/
+# build outputs
+studio-ui/dist/
+studio-ui/src-tauri/target/
+studio-ui/src-tauri/binaries/
+studio-ui/src-tauri/icons/
+studio-ui/desktop/dist/
+studio-ui/desktop/build/
+addins/revit/dist/
+addins/revit/bin/
+addins/revit/obj/
+# private: real projects and your local library catalog stay on your PC
+projects/*
+!projects/_template/
+learning-hub/library/catalog.yaml
